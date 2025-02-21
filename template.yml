@@ -1,0 +1,136 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFormation template defining a Lambda to check at deployment time if the runtimes of the Lambda being deployed are admitted or not"
+Parameters:
+  ParameterStoreParamName:
+    Type: String
+    Default: /cf-lambda-hook/lambda/permitted-runtimes
+    Description: Name of the ParameterStore StringList parameter containing permitted Lambda runtimes
+  ParameterStoreDefaultValue:
+    Type: String
+    Default: "nodejs20.x,nodejs18.x,python3.11,python3.10,java17,java11,dotnet6"
+    Description: Value of the ParameterStore StringList parameter containing permitted Lambda runtimes
+  DeploymentBucket:
+    Type: String
+    Description: S3 bucket for Lambda deployment packages
+Resources:
+  # Parameter Store Parameter
+  ConfigParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Ref ParameterStoreParamName
+      Type: StringList
+      Value: !Ref ParameterStoreDefaultValue
+      Description: "Configuration for Lambda Hook"
+
+  ParameterStoreAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: "Policy for Parameter Store access"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ParameterStoreParamName}
+
+  # Lambda function Role
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - !Ref ParameterStoreAccessPolicy
+
+  # Lambda Function
+  ValidationFunction:
+    # checkov:skip=CKV_AWS_117
+    # checkov:skip=CKV_AWS_116
+    # checkov:skip=CKV_AWS_115
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref DeploymentBucket
+        S3Key: hook-lambda.zip
+      Runtime: nodejs20.x
+      Timeout: 60
+      MemorySize: 128
+      Environment:
+        Variables:
+          PERMITTED_RUNTIMES_PARAM: !Ref ParameterStoreParamName
+    Metadata:
+      guard:
+        SuppressedRules:
+          - id: "LAMBDA_DLQ_CHECK"
+            reason: "Just providing an example of Lambda CloudFormation Hook"
+          - id: "LAMBDA_INSIDE_VPC"
+            reason: "Just providing an example of Lambda CloudFormation Hook"
+          - id: "LAMBDA_CONCURRENCY_CHECK"
+            reason: "Just providing an example of Lambda CloudFormation Hook"
+
+  # Hook Execution Role
+  HookExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: hooks.cloudformation.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref LambdaInvokePolicy
+
+  # Managed Policy for Lambda Invocation
+  LambdaInvokePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: "Policy to allow Lambda function invocation"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: !GetAtt ValidationFunction.Arn
+
+  # Lambda Hook
+  ValidationHook:
+    Type: AWS::CloudFormation::LambdaHook
+    Properties:
+      Alias: Private::Lambda::LambdaResourcesComplianceValidationHook
+      LambdaFunction: !GetAtt ValidationFunction.Arn
+      ExecutionRole: !GetAtt HookExecutionRole.Arn
+      FailureMode: FAIL
+      HookStatus: ENABLED
+      TargetFilters:
+        Actions:
+          - CREATE
+          - UPDATE
+        InvocationPoints:
+          - PRE_PROVISION
+        TargetNames:
+          - AWS::Lambda::Function
+      TargetOperations:
+        - RESOURCE
+        - STACK
+
+Outputs:
+  HookArn:
+    Description: "ARN of the created Lambda Hook"
+    Value: !Ref ValidationHook
+  LambdaArn:
+    Description: "ARN of the Lambda function"
+    Value: !GetAtt ValidationFunction.Arn

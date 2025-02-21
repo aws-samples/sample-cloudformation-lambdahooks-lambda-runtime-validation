@@ -1,0 +1,20 @@
+# Project files
+hook-lambda/dist/*
+hook-lambda/*.zip
+**/node_modules/**
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+*.swp
+.*.swp
+._*
+
+# IDE and Editor Files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+*.code-workspace

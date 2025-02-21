@@ -1,0 +1,23 @@
+{
+  "name": "hook-lambda",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "package": "npm run build && cd dist && zip -r ../hook-lambda.zip ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Lambda function for language version compliance checking",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.147",
+    "@types/node": "^20.10.4",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.474.0",
+    "@aws-sdk/client-ssm": "^3.730.0",
+    "aws-lambda": "^1.x.x"
+  }
+}
