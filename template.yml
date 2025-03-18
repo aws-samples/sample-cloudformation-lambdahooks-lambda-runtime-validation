@@ -9,7 +9,7 @@ Parameters:
     Description: Name of the ParameterStore StringList parameter containing permitted Lambda runtimes
   ParameterStoreDefaultValue:
     Type: String
-    Default: "nodejs20.x,nodejs18.x,python3.11,python3.10,java17,java11,dotnet6"
+    Default: "nodejs22.x,nodejs20.x,python3.11,python3.10,java17,java11,dotnet6"
     Description: Value of the ParameterStore StringList parameter containing permitted Lambda runtimes
   DeploymentBucket:
     Type: String
@@ -63,7 +63,7 @@ Resources:
       Code:
         S3Bucket: !Ref DeploymentBucket
         S3Key: hook-lambda.zip
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       Timeout: 60
       MemorySize: 128
       Environment:

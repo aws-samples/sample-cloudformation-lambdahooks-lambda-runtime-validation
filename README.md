@@ -39,7 +39,7 @@ The hook is implemented as a Lambda function that checks the runtime of a Lambda
 
 Prerequisites:
 - AWS CLI installed and configured
-- Node.js 20.x or later
+- Node.js 22.x or later
 - npm 9.x or later
 
 Steps:
