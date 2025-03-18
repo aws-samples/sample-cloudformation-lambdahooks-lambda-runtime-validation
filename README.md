@@ -14,6 +14,7 @@ The hook is implemented as a Lambda function that checks the runtime of a Lambda
 ├── CONTRIBUTING.md
 ├── README.md
 ├── deploy.sh
+├── cleanup.sh
 ├── hook-lambda
 │   ├── index.ts
 │   ├── package.json
@@ -23,10 +24,12 @@ The hook is implemented as a Lambda function that checks the runtime of a Lambda
 ├── sample
 │   ├── deploy_sample.sh
 │   └── lambda_template.yml
+│   └── cleanup_sample.sh
 └── template.yml
 ```
 
 - `deploy.sh`: Main deployment script for the Lambda Hook
+- `cleanup.sh`: Cleanup script to delete the Lambda Hook, Lambda Function, Parameter Store and S3 Bucket
 - `hook-lambda/`: Directory containing the Lambda function code
   - `index.ts`: Main entry point for the Lambda function
   - `services/parameter-store.ts`: Service for interacting with Parameter Store
