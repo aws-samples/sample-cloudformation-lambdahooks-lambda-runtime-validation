@@ -24,6 +24,7 @@ Resources:
       Value: !Ref ParameterStoreDefaultValue
       Description: "Configuration for Lambda Hook"
 
+  # IAM Policy to access Parameter Store
   ParameterStoreAccessPolicy:
     Type: AWS::IAM::Policy
     Properties:
@@ -92,7 +93,7 @@ Resources:
               Service: hooks.cloudformation.amazonaws.com
             Action: sts:AssumeRole
 
-  # Managed Policy for Lambda Invocation
+  # IAM Policy for Lambda Invocation
   LambdaInvokePolicy:
     Type: AWS::IAM::Policy
     Properties:
