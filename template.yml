@@ -25,9 +25,9 @@ Resources:
       Description: "Configuration for Lambda Hook"
 
   ParameterStoreAccessPolicy:
-    Type: AWS::IAM::ManagedPolicy
+    Type: AWS::IAM::Policy
     Properties:
-      Description: "Policy for Parameter Store access"
+      PolicyName: ParameterStoreAccess
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -35,6 +35,8 @@ Resources:
             Action:
               - ssm:GetParameter
             Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ParameterStoreParamName}
+      Roles:
+        - !Ref LambdaExecutionRole
 
   # Lambda function Role
   LambdaExecutionRole:
@@ -49,7 +51,6 @@ Resources:
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        - !Ref ParameterStoreAccessPolicy
 
   # Lambda Function
   ValidationFunction:
@@ -90,14 +91,12 @@ Resources:
             Principal:
               Service: hooks.cloudformation.amazonaws.com
             Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - !Ref LambdaInvokePolicy
 
   # Managed Policy for Lambda Invocation
   LambdaInvokePolicy:
-    Type: AWS::IAM::ManagedPolicy
+    Type: AWS::IAM::Policy
     Properties:
-      Description: "Policy to allow Lambda function invocation"
+      PolicyName: LambdaInvokePolicy
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -105,6 +104,8 @@ Resources:
             Action:
               - lambda:InvokeFunction
             Resource: !GetAtt ValidationFunction.Arn
+      Roles:
+        - !Ref HookExecutionRole
 
   # Lambda Hook
   ValidationHook:

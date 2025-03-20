@@ -27,7 +27,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: hello-world-function
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
