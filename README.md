@@ -1,5 +1,7 @@
 # CloudFormation Lambda Hook for Runtime Compliance Validation
 
+**Official AWS Blogpost referencing this code**: https://aws.amazon.com/blogs/devops/validate-your-lambda-runtime-with-cloudformation-lambda-hooks/
+
 This project implements a CloudFormation Lambda Hook that validates the runtime of Lambda functions being created or updated in a stack. It ensures that only permitted runtimes are used, enhancing security and compliance.
 
 The hook is implemented as a Lambda function that checks the runtime of a Lambda resource against a list of permitted runtimes stored in AWS Systems Manager Parameter Store. If the runtime is not permitted, the CloudFormation operation fails, preventing the deployment of non-compliant Lambda functions.
